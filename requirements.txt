@@ -1,0 +1,2 @@
+environs
+ffmpeg-python

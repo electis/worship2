@@ -32,17 +32,34 @@ ffmpeg.exe ^
 -s "1920x1080" -t 10 ^
 -filter_complex "%F1%" ^
 -y out.mp4
+
+
+ffmpeg -y -vsync 0 -hwaccel cuda -hwaccel_output_format cuda -i input.mp4 -c:a copy -c:v h264_nvenc -b:v 5M output.mp4
 """
 import ffmpeg
 
 
 def print_hi():
     inp = ffmpeg.input('/storage/download/music/worship/Жанна Каратаева, Алексей Каратаев - Я знаю.mp3')
-    vid = ffmpeg.input('/storage/download/music/worship.gif', stream_loop=-1)
-    out = 'out.mp4'
-    joined = ffmpeg.concat(vid.video, inp.audio, v=1, a=1)
-    ffmpeg.output(joined, out).run()
+    inp2 = ffmpeg.input('/storage/download/music/worship/Алексей Каратаев - Я Дойду С Тобой.mp3')
+    vid = ffmpeg.input('/storage/download/tmp/вр2.mp4', stream_loop=1)
+    joined = ffmpeg.concat(vid.video, inp.audio, vid.video, inp2.audio, v=1, a=1).drawtext('qwe', fontcolor='white', enable='between(t,3,10)').drawtext('asd', fontcolor='white', enable='between(t,11,20)')
+    out = '/storage/download/tmp/out.mp4'
+    ff = ffmpeg.output(joined, out, bufsize='1000K', acodec='aac', threads=2)
+    ff.overwrite_output().run()
+
+
+def create():
+    """TODO создаём файлы из каждого аудио, транслируем файлы с copy"""
+    #  bufsize='1000K', acodec='aac', threads=2), hwaccel_output_format='cuda', vsync=0, extra_hw_frames=12)
+    inp = ffmpeg.input('/storage/download/music/worship/Жанна Каратаева, Алексей Каратаев - Я знаю.mp3')
+    vid = ffmpeg.input('/storage/download/tmp/вр2.mp4', hwaccel_output_format='cuda').drawtext('asd', fontcolor='white')
+    out = '/storage/download/tmp/out.mp4'
+    # ff = ffmpeg.filter([inp, vid], 'overlay', 1, 1)
+    ff = ffmpeg.output(vid, inp, out, bufsize='1000K', acodec='aac', threads=2, vcodec='h264_nvenc')
+    ff.overwrite_output().run()
 
 
 if __name__ == '__main__':
-    print_hi()
+    create()
+    # print_hi()

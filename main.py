@@ -35,6 +35,19 @@ ffmpeg.exe ^
 
 
 ffmpeg -y -vsync 0 -hwaccel cuda -hwaccel_output_format cuda -i input.mp4 -c:a copy -c:v h264_nvenc -b:v 5M output.mp4
+
+
+# ffmpeg -loglevel error -y -re -loop 1 -f image2
+# -i /storage/download/music/worship.jpg -i /storage/download/music/worship/77f69e67-c78f-44d8-bb47-5f0768396879.mp3
+# -vf drawtext=text='Река - Gracetime Worship Band':fontcolor=white:fontsize=24:box=1:boxcolor=black@0.5:boxborderw=4:x=(w-text_w)/2:y=h*11/12+(32)*1, drawtext=text='На пути откровений Твоих я радуюсь, как во всяком богатстве.':fontcolor=yellow:fontsize=32:box=1:boxcolor=black@0.5:boxborderw=4:x=(w-text_w)/2:y=h*1/16+(40)*1, drawtext=text='Псалтирь 118\:14':fontcolor=yellow:fontsize=32:box=1:boxcolor=black@0.5:boxborderw=4:x=(w-text_w)/2:y=h*1/16+(40)*2
+# -codec:a aac -b:a 128k -ar 44100 -maxrate 2000k -bufsize 1000k -shortest -strict experimental -f flv rtmp://a.rtmp.youtube.com/live2/jmgf-2amh-19wg-h0rb-2hks
+
+# ffmpeg -y -re -loop 1 -f image2
+# -i /storage/download/music/worship.jpg
+# -i /storage/download/music/worship/77f69e67-c78f-44d8-bb47-5f0768396879.mp3
+# -vf drawtext=text='Рек'
+# -codec:a aac -b:a 128k -ar 44100 -maxrate 4000k -bufsize 1000k -shortest -strict experimental -f flv out.mp4
+
 """
 import ffmpeg
 
@@ -43,17 +56,21 @@ def print_hi():
     inp = ffmpeg.input('/storage/download/music/worship/Жанна Каратаева, Алексей Каратаев - Я знаю.mp3')
     inp2 = ffmpeg.input('/storage/download/music/worship/Алексей Каратаев - Я Дойду С Тобой.mp3')
     vid = ffmpeg.input('/storage/download/tmp/вр2.mp4', stream_loop=1)
-    joined = ffmpeg.concat(vid.video, inp.audio, vid.video, inp2.audio, v=1, a=1).drawtext('qwe', fontcolor='white', enable='between(t,3,10)').drawtext('asd', fontcolor='white', enable='between(t,11,20)')
+    joined = ffmpeg.concat(vid.video, inp.audio, vid.video, inp2.audio, v=1, a=1).drawtext('qwe', fontcolor='white',
+                                                                                           enable='between(t,3,10)').drawtext(
+        'asd', fontcolor='white', enable='between(t,11,20)')
     out = '/storage/download/tmp/out.mp4'
     ff = ffmpeg.output(joined, out, bufsize='1000K', acodec='aac', threads=2)
     ff.overwrite_output().run()
 
 
 def create():
-    """TODO создаём файлы из каждого аудио, транслируем файлы с copy"""
+    """TODO транслируем файлы с copy"""
     #  bufsize='1000K', acodec='aac', threads=2), hwaccel_output_format='cuda', vsync=0, extra_hw_frames=12)
     inp = ffmpeg.input('/storage/download/music/worship/Жанна Каратаева, Алексей Каратаев - Я знаю.mp3')
-    vid = ffmpeg.input('/storage/download/tmp/вр2.mp4', hwaccel_output_format='cuda').drawtext('asd', fontcolor='white')
+    vid = ffmpeg.input('/storage/download/tmp/вр2.mp4', hwaccel_output_format='cuda'
+                       ).drawtext('asqweqweqweqweqweqweqwd\nasdsadasdasdasdasdasdasdas', x=100, y=100,
+                                  fontcolor='yellow', fontsize=32)
     out = '/storage/download/tmp/out.mp4'
     # ff = ffmpeg.filter([inp, vid], 'overlay', 1, 1)
     ff = ffmpeg.output(vid, inp, out, bufsize='1000K', acodec='aac', threads=2, vcodec='h264_nvenc')

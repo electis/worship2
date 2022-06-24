@@ -1,56 +1,77 @@
 import glob
-import json
 import os
 import random
+from typing import Union
 
+from tinytag import TinyTag
 from environs import Env
 import ffmpeg
 
-# ffmpeg -loglevel error -y -re -loop 1 -f image2
-# -i /storage/download/music/worship.jpg -i /storage/download/music/worship/77f69e67-c78f-44d8-bb47-5f0768396879.mp3
-# -vf drawtext=text='Река - Gracetime Worship Band':fontcolor=white:fontsize=24:box=1:boxcolor=black@0.5:boxborderw=4:x=(w-text_w)/2:y=h*11/12+(32)*1, drawtext=text='На пути откровений Твоих я радуюсь, как во всяком богатстве.':fontcolor=yellow:fontsize=32:box=1:boxcolor=black@0.5:boxborderw=4:x=(w-text_w)/2:y=h*1/16+(40)*1, drawtext=text='Псалтирь 118\:14':fontcolor=yellow:fontsize=32:box=1:boxcolor=black@0.5:boxborderw=4:x=(w-text_w)/2:y=h*1/16+(40)*2
-# -codec:a aac -b:a 128k -ar 44100 -maxrate 2000k -bufsize 1000k -shortest -strict experimental -f flv rtmp://a.rtmp.youtube.com/live2/jmgf-2amh-19wg-h0rb-2hks
+from bible import bible
 
 
-# ffmpeg -y -re -loop 1 -f image2
-# -i /storage/download/music/worship.jpg
-# -i /storage/download/music/worship/77f69e67-c78f-44d8-bb47-5f0768396879.mp3
-# -vf drawtext=text='Рек'
-# -codec:a aac -b:a 128k -ar 44100 -maxrate 4000k -bufsize 1000k -shortest -strict experimental -f flv out.mp4
+def insert_line_breaks(text: str, max_length=80):
+    result = ''
+    length = 0
+    for num, char in enumerate(text):
+        if length > max_length - max_length * 0.2:
+            if text[num] == ' ':
+                result += '\n'
+                length = 0
+                char = ''
+        elif length > max_length:
+            result += '\n'
+            length = 0
+        if text[num:num + 1] == '\n':
+            length = -1
+        length += 1
+        # if char == ':':
+        #     result += '\:'
+        # else:
+        result += char
+    return result
+
 
 def create():
-    bible_file = 'bible.txt'
+    pray_top: Union[int, None] = 150  # если None, то по центру
+    stop_after = 90 * 60
     video_file = '/storage/download/music/worship.mp4'
+    video_len = 8  # с запасом, чтобы звук раньше не кончился
     audio_path = '/storage/download/music/worship/*.mp3'
     tmp_path = '/storage/download/music/tmp'
+
     video_params = dict(hwaccel_output_format='cuda')
     output_params = dict(bufsize='1000K', acodec='aac', vcodec='h264_nvenc')
+    text_params = dict(box=1, boxcolor='black@0.5', x="(w-text_w)/2", boxborderw=4)
 
     audio_files = glob.glob(audio_path)
     random.shuffle(audio_files)
-
-    # TODO delete files in tmp_path
-
-    with open(bible_file) as f:
-        bible = json.load(f)
     random.shuffle(bible)
 
+    for f in glob.glob(os.path.join(tmp_path, '*')):
+        os.remove(f)
+
     playing_time = 0
-    ff_video_src = ffmpeg.input(video_file, **video_params)
     for num, audio in enumerate(audio_files):
-        pray_text = random.choice(bible[num])
+        pray_text = insert_line_breaks(bible[num])
+        pray_y = int(500 - len(pray_text.split('\n')) * (40 / 2 + 4)) if pray_top is None else pray_top
         playing = TinyTag.get(audio)
-        playing = f"{getattr(playing, 'title', '')} - {getattr(playing, 'artist', '')}"
+        playing_text = f"{getattr(playing, 'title', '')} - {getattr(playing, 'artist', '')}"
 
-        ff_video = ff_video_src.drawtext(pray_text, x=100, y=100, fontcolor='yellow', fontsize=32)  # escape_text=True
-        ff_video = ff_video.drawtext(playing, x=100, y=1000, fontcolor='white', fontsize=20)
-
+        loops = playing.duration // video_len
+        ff_video_src = ffmpeg.input(video_file, stream_loop=loops, **video_params)
         ff_audio = ffmpeg.input(audio)
-        out_file = os.path.join(tmp_path, f'{num:02d}.mp4')
+        ff_video = ff_video_src.drawtext(
+            pray_text, y=pray_y, fontcolor='yellow', fontsize=40, **text_params
+        ).drawtext(
+            playing_text, y=1030, fontcolor='white', fontsize=32, **text_params
+        )
+        out_file = os.path.join(tmp_path, f'{num:03d}.mp4')
+
         ffmpeg.output(ff_video, ff_audio, out_file, **output_params).overwrite_output().run()
 
-        playing_time += ...
-        if playing_time > 5400:
+        playing_time += playing.duration
+        if playing_time > stop_after:
             break
 
 

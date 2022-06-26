@@ -16,7 +16,7 @@ def stream(conf: Config = None):
     with open(in_file, 'w') as file:
         file.writelines([f"file '{path}'\n"
                          for path in sorted(glob.glob(os.path.join(conf.tmp_path, '*.mp4')))])
-    joined = ffmpeg.input(in_file, safe=0, format='concat', readrate=1)
+    joined = ffmpeg.input(in_file, safe=0, format='concat', re=None)
 
     ffmpeg.output(joined, stream, **output_params).overwrite_output().run(cmd=conf.stream_cmd or 'ffmpeg')
 

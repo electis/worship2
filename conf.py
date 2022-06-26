@@ -13,7 +13,6 @@ class Config(BaseModel):
     pray_top: Optional[int]
     stop_after: Optional[int]
     video_file: str
-    video_len: int  # TODO https://stackoverflow.com/a/61572332/13195809
     audio_path: str
     tmp_path: str
     stream_cmd: Optional[str]

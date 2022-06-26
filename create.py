@@ -33,7 +33,7 @@ def create(conf: Config = None):
         conf = read_config()
 
     video_params = dict(hwaccel_output_format='cuda')
-    output_params = dict(acodec='aac', vcodec='h264_nvenc', f='flv', maxrate='1000k', bufsize='2000k')
+    output_params = dict(acodec='aac', vcodec='h264_nvenc', f='flv', maxrate='1000k', bufsize='2000k', shortest=None)
     text_params = dict(box=1, boxcolor='black@0.5', x="(w-text_w)/2", boxborderw=15)
 
     audio_files = glob.glob(conf.audio_path)
@@ -50,8 +50,7 @@ def create(conf: Config = None):
         playing = TinyTag.get(audio)
         playing_text = f"{getattr(playing, 'title', '')} - {getattr(playing, 'artist', '')}"
 
-        loops = playing.duration // conf.video_len
-        ff_video_src = ffmpeg.input(conf.video_file, stream_loop=loops, **video_params)
+        ff_video_src = ffmpeg.input(conf.video_file, stream_loop=-1, **video_params)
         ff_audio = ffmpeg.input(audio)
         ff_video = ff_video_src.drawtext(
             pray_text, y=pray_y, fontcolor='yellow', fontsize=40, **text_params

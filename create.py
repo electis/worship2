@@ -7,6 +7,7 @@ import ffmpeg
 
 from bible import bible
 from conf import Config, read_config
+from helpers import notify
 
 
 def insert_line_breaks(text: str, max_length=80):
@@ -28,10 +29,7 @@ def insert_line_breaks(text: str, max_length=80):
     return result
 
 
-def create(conf: Config = None):
-    if not conf:
-        conf = read_config()
-
+def create(conf: Config):
     video_params = dict(hwaccel_output_format='cuda')
     output_params = dict(acodec='aac', vcodec='h264_nvenc', f='flv', maxrate='1000k', bufsize='2000k', shortest=None)
     text_params = dict(box=1, boxcolor='black@0.5', x="(w-text_w)/2", boxborderw=15)
@@ -67,4 +65,6 @@ def create(conf: Config = None):
 
 
 if __name__ == '__main__':
-    create()
+    conf = read_config()
+    with notify('Worship create', only_error=False):
+        create(conf)

@@ -2,3 +2,4 @@ environs
 ffmpeg-python
 tinytag
 pydantic
+requests

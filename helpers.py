@@ -1,12 +1,13 @@
 import logging
 from contextlib import contextmanager
+import os
 
 import requests
 
 from conf import Config
 
 logging.basicConfig(
-    filename='worship.log', level=logging.INFO,
+    filename=os.path.join(os.path.abspath(__file__), 'worship.log'), level=logging.INFO,
     format='%(asctime)s %(levelname)s %(module)s.%(funcName)s: %(message)s', datefmt='%Y-%m-%d %H:%M:%S',
 )
 

@@ -10,7 +10,7 @@ from conf import Config, read_config
 from helpers import notify
 
 
-def insert_line_breaks(text: str, max_length=80):
+def insert_line_breaks(text: str, max_length=64):
     result = ''
     length = 0
     for num, char in enumerate(text):
@@ -51,7 +51,7 @@ def create(conf: Config):
         ff_video_src = ffmpeg.input(conf.video_file, stream_loop=-1, **video_params)
         ff_audio = ffmpeg.input(audio)
         ff_video = ff_video_src.drawtext(
-            pray_text, y=pray_y, fontcolor='yellow', fontsize=40, **text_params
+            pray_text, y=pray_y, fontcolor='yellow', fontsize=48, **text_params
         ).drawtext(
             playing_text, y=1030, fontcolor='white', fontsize=32, **text_params
         )

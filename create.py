@@ -1,13 +1,19 @@
 import glob
 import os
 import random
+import logging
 
 from tinytag import TinyTag
 import ffmpeg
 
 from bible import bible
 from conf import Config, read_config
-from helpers import notify
+from helpers import notify, log_tg
+
+logging.basicConfig(
+    filename=os.path.join(os.path.dirname(os.path.abspath(__file__)), 'worship.log'), level=logging.INFO,
+    format='%(asctime)s %(levelname)s %(module)s.%(funcName)s: %(message)s', datefmt='%Y-%m-%d %H:%M:%S',
+)
 
 
 def insert_line_breaks(text: str, max_length=64):
@@ -57,14 +63,26 @@ def create(conf: Config):
         )
         out_file = os.path.join(conf.tmp_path, f'{num:03d}.mp4')
 
-        ffmpeg.output(ff_video, ff_audio, out_file, **output_params).overwrite_output().run()
-
-        playing_time += playing.duration
-        if playing_time > conf.stop_after:
-            break
+        ff = ffmpeg.output(ff_video, ff_audio, out_file, **output_params).overwrite_output()
+        if conf.debug:
+            logging.info(' '.join(ff.get_args()))
+        try:
+            ff.run(capture_stdout=True, capture_stderr=True)
+        except ffmpeg.Error as exc:
+            logging.exception(exc)
+            logging.error(f'stderr: {exc.stderr.decode("utf8")}')
+            logging.error(f'stdout: {exc.stdout.decode("utf8")}')
+            log_tg(str(exc), conf.tg_)
+        except Exception as exc:
+            logging.exception(exc)
+            log_tg(str(exc), conf.tg_)
+        else:
+            playing_time += playing.duration
+            if playing_time > conf.stop_after:
+                break
 
 
 if __name__ == '__main__':
     conf = read_config()
-    with notify('Worship create', only_error=False):
+    with notify('Worship create', only_error=not(conf.debug)):
         create(conf)

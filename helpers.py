@@ -3,6 +3,7 @@ from contextlib import contextmanager
 import os
 
 import requests
+import ffmpeg
 
 from conf import Config
 
@@ -76,3 +77,24 @@ def post2group(conf: Config):
         except Exception as exc:
             logging.warning(str(exc))
             log_tg(f'post2group {exc}', conf.tg_)
+
+
+@contextmanager
+def log_ffmpeg(ff, conf):
+    result = [None]
+    try:
+        yield result
+    except ffmpeg.Error as exc:
+        logging.exception(exc)
+        logging.error(' '.join(ff.get_args()))
+        logging.error(f'stderr: {exc.stderr.decode("utf8")}')
+        logging.error(f'stdout: {exc.stdout.decode("utf8")}')
+        log_tg(str(exc), conf.tg_)
+        result[0] = exc
+    except Exception as exc:
+        logging.exception(exc)
+        logging.error(' '.join(ff.get_args()))
+        log_tg(str(exc), conf.tg_)
+        result[0] = exc
+    else:
+        result[0] = True

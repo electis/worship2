@@ -8,7 +8,7 @@ import ffmpeg
 
 from bible import bible
 from conf import Config, read_config
-from helpers import notify, log_tg
+from helpers import notify, log_tg, log_ffmpeg
 
 logging.basicConfig(
     filename=os.path.join(os.path.dirname(os.path.abspath(__file__)), 'worship.log'), level=logging.INFO,
@@ -65,22 +65,13 @@ def create(conf: Config):
 
         ff = ffmpeg.output(ff_video, ff_audio, out_file, **output_params).overwrite_output()
         if conf.debug:
-            logging.info(' '.join(ff.get_args()))
-        try:
+            logging.debug(' '.join(ff.get_args()))
+        with log_ffmpeg(ff, conf) as result:
             ff.run(capture_stdout=True, capture_stderr=True)
-        except ffmpeg.Error as exc:
-            logging.exception(exc)
-            logging.error(f'stderr: {exc.stderr.decode("utf8")}')
-            logging.error(f'stdout: {exc.stdout.decode("utf8")}')
-            log_tg(str(exc), conf.tg_)
-        except Exception as exc:
-            logging.exception(exc)
-            log_tg(str(exc), conf.tg_)
-        else:
+        if result[0] is True:
             playing_time += playing.duration
             if playing_time > conf.stop_after:
                 break
-
 
 if __name__ == '__main__':
     conf = read_config()

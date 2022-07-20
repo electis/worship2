@@ -5,7 +5,7 @@ import logging
 import ffmpeg
 
 from conf import Config, read_config
-from helpers import notify, post2group, log_tg
+from helpers import notify, post2group, log_tg, log_ffmpeg
 
 logging.basicConfig(
     filename=os.path.join(os.path.dirname(os.path.abspath(__file__)), 'worship.log'), level=logging.INFO,
@@ -26,18 +26,8 @@ def stream(conf: Config):
     ff = ffmpeg.output(joined, stream, **output_params).overwrite_output()
     if conf.debug:
         logging.debug(' '.join(ff.get_args()))
-    try:
+    with log_ffmpeg(ff, conf):
         ff.run(cmd=conf.stream_cmd or 'ffmpeg', capture_stdout=True, capture_stderr=True)
-    except ffmpeg.Error as exc:
-        logging.exception(exc)
-        logging.error(' '.join(ff.get_args()))
-        logging.error(f'stderr: {exc.stderr.decode("utf8")}')
-        logging.error(f'stdout: {exc.stdout.decode("utf8")}')
-        log_tg(str(exc), conf.tg_)
-    except Exception as exc:
-        logging.exception(exc)
-        logging.error(' '.join(ff.get_args()))
-        log_tg(str(exc), conf.tg_)
 
 
 if __name__ == '__main__':

@@ -72,6 +72,9 @@ def create(conf: Config):
             playing_time += playing.duration
             if playing_time > conf.stop_after:
                 break
+        else:
+            if os.path.exists(out_file):
+                os.remove(out_file)
 
 if __name__ == '__main__':
     conf = read_config()

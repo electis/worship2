@@ -35,6 +35,20 @@ def insert_line_breaks(text: str, max_length=64):
     return result
 
 
+def get_playing_text(filepath):
+    artist, title = '', ''
+    try:
+        artist, title = os.path.basename(filepath).split('-')
+        title = title[:-4]
+    except:
+        pass
+    playing = TinyTag.get(filepath)
+    artist = getattr(playing, 'artist', '') or artist
+    title = getattr(playing, 'title', '') or title
+    duration = getattr(playing, 'duration', 0) or 0
+    return f"{title} - {artist}", duration
+
+
 def create(conf: Config):
     video_params = dict(hwaccel_output_format='cuda')
     output_params = dict(acodec='aac', vcodec='h264_nvenc', f='flv', maxrate='1000k', bufsize='2000k', shortest=None)
@@ -51,9 +65,7 @@ def create(conf: Config):
     for num, audio in enumerate(audio_files):
         pray_text = insert_line_breaks(bible[num])
         pray_y = int(500 - len(pray_text.split('\n')) * (40 / 2 + 4)) if conf.pray_top is None else conf.pray_top
-        playing = TinyTag.get(audio)
-        playing_text = f"{getattr(playing, 'title', '')} - {getattr(playing, 'artist', '')}"
-
+        playing_text, duration = get_playing_text(audio)
         ff_video_src = ffmpeg.input(conf.video_file, stream_loop=-1, **video_params)
         ff_audio = ffmpeg.input(audio)
         ff_video = ff_video_src.drawtext(
@@ -69,7 +81,7 @@ def create(conf: Config):
         with log_ffmpeg(ff, conf) as result:
             ff.run(capture_stdout=True, capture_stderr=True)
         if result[0] is True:
-            playing_time += playing.duration
+            playing_time += duration
             if playing_time > conf.stop_after:
                 break
         else:

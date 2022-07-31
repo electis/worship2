@@ -66,8 +66,8 @@ def create(conf: Config):
         pray_text = insert_line_breaks(bible[num])
         pray_y = int(500 - len(pray_text.split('\n')) * (40 / 2 + 4)) if conf.pray_top is None else conf.pray_top
         playing_text, duration = get_playing_text(audio)
+        ff_audio = ffmpeg.input(audio, vn=None)
         ff_video_src = ffmpeg.input(conf.video_file, stream_loop=-1, **video_params)
-        ff_audio = ffmpeg.input(audio)
         ff_video = ff_video_src.drawtext(
             pray_text, y=pray_y, fontcolor='yellow', fontsize=48, **text_params
         ).drawtext(

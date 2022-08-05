@@ -29,7 +29,6 @@ def send_message(text, chat_id, token, parse_mode='Markdown'):
 
 
 def log_tg(text, tg=None):
-    logging.info(text)
     if tg:
         send_message(text, tg.tg_chat_id, tg.tg_token)
 
@@ -75,12 +74,14 @@ def post2group(conf: Config):
         try:
             run_task(conf, params)
         except Exception as exc:
-            logging.warning(str(exc))
+            logging.exception(exc)
             log_tg(f'post2group {exc}', conf.tg_)
 
 
 @contextmanager
 def log_ffmpeg(ff, conf):
+    if conf.debug:
+        logging.getLogger().addHandler(logging.StreamHandler())
     result = [None]
     try:
         yield result

@@ -8,7 +8,7 @@ import ffmpeg
 
 from bible import bible
 from conf import Config, read_config
-from helpers import notify, log_tg, log_ffmpeg
+from helpers import notify, log_ffmpeg
 
 logging.basicConfig(
     filename=os.path.join(os.path.dirname(os.path.abspath(__file__)), 'worship.log'), level=logging.INFO,
@@ -56,14 +56,13 @@ def create(conf: Config):
 
     audio_files = glob.glob(conf.audio_path)
     random.shuffle(audio_files)
-    random.shuffle(bible)
 
     for f in glob.glob(os.path.join(conf.tmp_path, '*')):
         os.remove(f)
 
     playing_time = 0
     for num, audio in enumerate(audio_files):
-        pray_text = insert_line_breaks(bible[num])
+        pray_text = insert_line_breaks(random.choice(bible))
         pray_y = int(500 - len(pray_text.split('\n')) * (40 / 2 + 4)) if conf.pray_top is None else conf.pray_top
         playing_text, duration = get_playing_text(audio)
         ff_audio = ffmpeg.input(audio, vn=None)

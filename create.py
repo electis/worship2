@@ -51,7 +51,11 @@ def get_playing_text(filepath):
 
 def create(conf: Config):
     video_params = dict(hwaccel_output_format='cuda')
-    output_params = dict(acodec='aac', vcodec='h264_nvenc', f='flv', maxrate='1000k', bufsize='2000k', shortest=None)
+    output_params = dict(acodec='aac', vcodec='h264_nvenc', f='flv', maxrate='2000k', bufsize='4000k', shortest=None)
+    output_params.update({
+        'b:v': '1500k', 'b:a': '128k', 'ar': '44100', 'framerate': '30', 'g': '60',
+        'force_key_frames': "expr:gte(t,n_forced*2)"
+    })
     text_params = dict(box=1, boxcolor='black@0.5', x="(w-text_w)/2", boxborderw=15)
 
     audio_files = glob.glob(conf.audio_path)

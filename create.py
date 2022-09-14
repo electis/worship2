@@ -66,7 +66,7 @@ def create(conf: Config):
 
     playing_time = 0
     for num, audio in enumerate(audio_files):
-        pray_text = insert_line_breaks(random.choice(bible))
+        pray_text = insert_line_breaks(random.choice(bible), max_length=60)
         pray_y = int(500 - len(pray_text.split('\n')) * (40 / 2 + 4)) if conf.pray_top is None else conf.pray_top
         playing_text, duration = get_playing_text(audio)
         ff_audio = ffmpeg.input(audio, vn=None)

@@ -49,14 +49,12 @@ def read_config() -> Config:
     cur_path = script_dir()
     env.read_env(str(cur_path / '.env.example'))
     env.read_env(override=True)
-
     if len(sys.argv) > 1:
         env.read_env(str(cur_path / sys.argv[1]), override=True)
 
     conf = Config(**{key: env(key.upper())
                      for key in Config.__fields__.keys()
                      if not key.endswith('_')})
-
     conf.stop_after = conf.stop_after * 60
     tg = TG(
         tg_chat_id=env('TGRAM_CHATID', None),
@@ -72,11 +70,6 @@ def read_config() -> Config:
     )
     if post.task_url:
         conf.post_ = post
-    if len(sys.argv) > 1:
-        for arg in sys.argv[1:]:
-            arg_ = arg.split('=')
-            if len(arg_) != 2 or not arg_[0].isupper() or not arg_[0].lower() in Config.__fields__.keys():
-                raise Exception('Available params: [ENV]=[value]')
 
     Path(conf.tmp_path).mkdir(parents=True, exist_ok=True)
     return conf

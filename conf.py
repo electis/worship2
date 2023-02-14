@@ -1,6 +1,7 @@
 import inspect
 from pathlib import Path
-from typing import Optional, List, NewType, Union
+import sys
+from typing import Optional
 
 from environs import Env
 
@@ -45,8 +46,12 @@ def script_dir():
 
 def read_config() -> Config:
     env = Env()
-    env.read_env(str(script_dir() / '.env.example'))
+    cur_path = script_dir()
+    env.read_env(str(cur_path / '.env.example'))
     env.read_env(override=True)
+
+    if len(sys.argv) > 1:
+        env.read_env(str(cur_path / sys.argv[1]), override=True)
 
     conf = Config(**{key: env(key.upper())
                      for key in Config.__fields__.keys()
@@ -67,5 +72,11 @@ def read_config() -> Config:
     )
     if post.task_url:
         conf.post_ = post
+    if len(sys.argv) > 1:
+        for arg in sys.argv[1:]:
+            arg_ = arg.split('=')
+            if len(arg_) != 2 or not arg_[0].isupper() or not arg_[0].lower() in Config.__fields__.keys():
+                raise Exception('Available params: [ENV]=[value]')
+
     Path(conf.tmp_path).mkdir(parents=True, exist_ok=True)
     return conf

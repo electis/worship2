@@ -28,6 +28,7 @@ class Config(BaseModel):
     video_file: str
     audio_path: str
     tmp_path: str
+    threads: int = 1
     stream_cmd: Optional[str]
     debug: bool
     tg_: Optional[TG]

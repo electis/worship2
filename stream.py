@@ -5,7 +5,8 @@ import os
 import ffmpeg
 
 from conf import Config, read_config
-from helpers import log_ffmpeg, notify, post2group, post2vk_task
+from helpers import log_ffmpeg, notify, post2group
+from vk import post2vk_task
 
 logging.basicConfig(
     filename=os.path.join(os.path.dirname(os.path.abspath(__file__)), 'worship.log'), level=logging.INFO,

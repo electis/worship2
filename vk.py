@@ -1,6 +1,7 @@
 import json
 import time
 from datetime import datetime
+from threading import Thread
 
 import vk_api
 
@@ -88,3 +89,9 @@ def post2vk(conf: Config, data_file='post2vk.json', delay=0):
             data['video_id'] = video['id']
             save_data(data, data_file)
             return True
+        logging.warning('post2vk: live video not found')
+
+def post2vk_task(conf: Config):
+    task = Thread(target=post2vk, kwargs=dict(conf=conf, delay=10))
+    task.start()
+    return task

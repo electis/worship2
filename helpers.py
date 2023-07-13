@@ -1,13 +1,11 @@
 import logging
 import os
-from threading import Thread
 from contextlib import contextmanager
 
 import ffmpeg
 import requests
 
 from conf import Config
-from vk import post2vk
 
 logging.basicConfig(
     filename=os.path.join(os.path.dirname(os.path.abspath(__file__)), 'worship.log'), level=logging.INFO,
@@ -104,9 +102,3 @@ def log_ffmpeg(ff, conf):
         result[0] = exc
     else:
         result[0] = True
-
-
-def post2vk_task(conf: Config):
-    task = Thread(target=post2vk, kwargs=dict(conf=conf, delay=10))
-    task.start()
-    return task

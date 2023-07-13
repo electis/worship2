@@ -3,3 +3,4 @@ ffmpeg-python
 tinytag
 pydantic
 requests
+vk_api

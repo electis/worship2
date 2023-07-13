@@ -1,11 +1,13 @@
 import logging
-from contextlib import contextmanager
 import os
+from threading import Thread
+from contextlib import contextmanager
 
-import requests
 import ffmpeg
+import requests
 
 from conf import Config
+from vk import post2vk
 
 logging.basicConfig(
     filename=os.path.join(os.path.dirname(os.path.abspath(__file__)), 'worship.log'), level=logging.INFO,
@@ -30,18 +32,21 @@ def send_message(text, chat_id, token, parse_mode='Markdown'):
 
 def log_tg(text, tg=None):
     if tg:
-        send_message(text, tg.tg_chat_id, tg.tg_token)
+        send_message(text, tg.chat_id, tg.token)
 
 
 @contextmanager
 def notify(text, tg=None, only_error=True):
+    logging.info(f'start {text}')
     if not only_error:
         log_tg(f'start {text}', tg)
     try:
         yield
     except Exception as exc:
+        logging.exception(f'{text}: Exception {exc}')
         log_tg(f'Exception {exc}', tg)
     else:
+        logging.info(f'stop {text}')
         if not only_error:
             log_tg(f'stop {text}', tg)
 
@@ -99,3 +104,9 @@ def log_ffmpeg(ff, conf):
         result[0] = exc
     else:
         result[0] = True
+
+
+def post2vk_task(conf: Config):
+    task = Thread(target=post2vk, kwargs=dict(conf=conf, delay=10))
+    task.start()
+    return task

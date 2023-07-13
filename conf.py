@@ -1,16 +1,15 @@
 import inspect
-from pathlib import Path
 import sys
-from typing import Optional
+from pathlib import Path
+from typing import Iterable, Optional
 
 from environs import Env
-
 from pydantic import BaseModel
 
 
 class TG(BaseModel):
-    tg_chat_id: Optional[str]
-    tg_token: Optional[str]
+    chat_id: Optional[str]
+    token: Optional[str]
 
 
 class Post(BaseModel):
@@ -18,6 +17,11 @@ class Post(BaseModel):
     task_token: Optional[str]
     youtube_channel: Optional[str]
     chat_id: Optional[str]
+
+
+class VK(BaseModel):
+    group_id: str
+    access_token: str
 
 
 class Config(BaseModel):
@@ -33,16 +37,23 @@ class Config(BaseModel):
     debug: bool
     tg_: Optional[TG]
     post_: Optional[Post]
+    vk_: Optional[VK]
     _in_file: str = 'input.txt'
 
 
 def script_dir():
-    current_frame = inspect.currentframe()
-    if current_frame is None:
-        raise RuntimeError("Could not get current call frame.")
-    frame = current_frame.f_back
-    assert frame is not None
-    return Path(frame.f_code.co_filename).parent.resolve()
+    return Path(inspect.currentframe().f_back.f_code.co_filename).parent.resolve()
+
+
+def conf_by_model(env, model, with_prefix=False, check_fields: Iterable = None):
+    prefix = f"{model.__name__.upper()}_" if with_prefix else ''
+    conf = model(**{key: env(prefix + key.upper())
+                    for key in model.__fields__.keys()
+                    if not key.endswith('_')})
+    if check_fields:
+        if not all([getattr(conf, field, False) for field in check_fields]):
+            conf = None
+    return conf
 
 
 def read_config() -> Config:
@@ -50,27 +61,16 @@ def read_config() -> Config:
     cur_path = script_dir()
     env.read_env(str(cur_path / '.env.example'))
     env.read_env(override=True)
+
+    # считать конфиг из параметра запуска поверх стандартного
     if len(sys.argv) > 1:
         env.read_env(str(cur_path / sys.argv[1]), override=True)
 
-    conf = Config(**{key: env(key.upper())
-                     for key in Config.__fields__.keys()
-                     if not key.endswith('_')})
-    conf.stop_after = conf.stop_after * 60
-    tg = TG(
-        tg_chat_id=env('TGRAM_CHATID', None),
-        tg_token=env('TGRAM_TOKEN', None),
-    )
-    if tg.tg_chat_id and tg.tg_token:
-        conf.tg_ = tg
-    post = Post(
-        task_url=env('TASK_URL', None),
-        task_token=env('TASK_TOKEN', None),
-        youtube_channel=env('YOUTUBE_CHANNEL', None),
-        chat_id=env('CHAT_ID', None),
-    )
-    if post.task_url:
-        conf.post_ = post
+    conf = conf_by_model(env, Config)
+    conf.tg_ = conf_by_model(env, TG, with_prefix=True, check_fields=('chat_id', 'token'))
+    conf.post_ = conf_by_model(env, Post, with_prefix=True, check_fields=('task_url',))
+    conf.vk_ = conf_by_model(env, VK, with_prefix=True, check_fields=('access_token', 'group_id'))
 
+    conf.stop_after = conf.stop_after * 60
     Path(conf.tmp_path).mkdir(parents=True, exist_ok=True)
     return conf

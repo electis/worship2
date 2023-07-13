@@ -1,11 +1,11 @@
 import glob
-import os
 import logging
+import os
 
 import ffmpeg
 
 from conf import Config, read_config
-from helpers import notify, post2group, log_tg, log_ffmpeg
+from helpers import log_ffmpeg, notify, post2group, post2vk_task
 
 logging.basicConfig(
     filename=os.path.join(os.path.dirname(os.path.abspath(__file__)), 'worship.log'), level=logging.INFO,
@@ -34,4 +34,5 @@ if __name__ == '__main__':
     conf = read_config()
     with notify('Worship stream', conf.tg_, only_error=not(conf.debug)):
         post2group(conf)
+        post2vk_task(conf)
         stream(conf)

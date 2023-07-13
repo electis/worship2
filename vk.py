@@ -5,7 +5,7 @@ from threading import Thread
 
 import vk_api
 
-from conf import Config
+from conf import Config, script_dir
 from helpers import notify, logging
 
 
@@ -75,6 +75,7 @@ def post2vk(conf: Config, data_file='post2vk.json', delay=0):
         video = get_live(api, conf.vk_.group_id)
         if video:
             post_id = post_wall(api, conf.vk_.group_id, video=video)
+            data_file = script_dir() / data_file
             data = load_data(data_file)
 
             try:

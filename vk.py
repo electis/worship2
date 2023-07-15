@@ -68,8 +68,7 @@ def del_video(api, owner_id, video_id):
     return api.video.delete(video_id=video_id, owner_id=owner_id, target_id=owner_id)
 
 
-def post2vk(conf: Config, data_file='post2vk.json', delay=0):
-    time.sleep(delay)
+def post2vk(conf: Config, data_file='post2vk.json'):
     with notify('post2vk'):
         api = get_api(conf.vk_.access_token)
         video = get_live(api, conf.vk_.group_id)
@@ -92,7 +91,15 @@ def post2vk(conf: Config, data_file='post2vk.json', delay=0):
             return True
         logging.warning('post2vk: live video not found')
 
+
+def post2vk_run(delay=15, attempt=5, **kwargs):
+    for _ in range(attempt):
+        time.sleep(delay)
+        if post2vk(**kwargs):
+            break
+
+
 def post2vk_task(conf: Config):
-    task = Thread(target=post2vk, kwargs=dict(conf=conf, delay=10))
+    task = Thread(target=post2vk_run, kwargs=dict(conf=conf))
     task.start()
     return task

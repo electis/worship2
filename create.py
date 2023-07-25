@@ -6,7 +6,7 @@ import logging
 from tinytag import TinyTag
 import ffmpeg
 
-from bible import bible
+from bible5 import bible
 from conf import Config, read_config
 from helpers import notify, log_ffmpeg
 
@@ -65,15 +65,27 @@ def create(conf: Config):
     for f in glob.glob(os.path.join(conf.tmp_path, '*')):
         os.remove(f)
 
+    random.shuffle(bible)
+
     playing_time = 0
     for num, audio in enumerate(audio_files):
-        pray_text = insert_line_breaks(random.choice(bible), max_length=60)
+        pray_text = bible[num]
+
+        if len(pray_text) < 600:
+            max_length = 60
+            font_size = 48
+        else:
+            max_length = 74
+            font_size = 38
+
+        pray_text = insert_line_breaks(pray_text, max_length=max_length)
         pray_y = int(500 - len(pray_text.split('\n')) * (40 / 2 + 4)) if conf.pray_top is None else conf.pray_top
         playing_text, duration = get_playing_text(audio)
         ff_audio = ffmpeg.input(audio, vn=None)
         ff_video_src = ffmpeg.input(conf.video_file, stream_loop=-1, **video_params)
+
         ff_video = ff_video_src.drawtext(
-            pray_text, y=pray_y, fontcolor='yellow', fontsize=48, **text_params
+            pray_text, y=pray_y, fontcolor='yellow', fontsize=font_size, **text_params
         ).drawtext(
             playing_text, y=1030, fontcolor='white', fontsize=32, **text_params
         )

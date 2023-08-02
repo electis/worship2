@@ -75,7 +75,7 @@ def create(conf: Config):
             max_length = 60
             font_size = 48
         else:
-            max_length = 74
+            max_length = 76
             font_size = 38
 
         pray_text = insert_line_breaks(pray_text, max_length=max_length)

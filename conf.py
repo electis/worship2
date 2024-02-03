@@ -35,9 +35,9 @@ class Config(BaseModel):
     threads: int = 1
     stream_cmd: Optional[str]
     debug: bool
-    tg_: Optional[TG]
-    post_: Optional[Post]
-    vk_: Optional[VK]
+    tg_: TG = None
+    post_: Post = None
+    vk_: VK = None
     _in_file: str = 'input.txt'
 
 

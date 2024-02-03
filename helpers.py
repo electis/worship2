@@ -9,7 +9,7 @@ from conf import Config
 
 logging.basicConfig(
     filename=os.path.join(os.path.dirname(os.path.abspath(__file__)), 'worship.log'), level=logging.INFO,
-    format='%(asctime)s %(levelname)s %(module)s.%(funcName)s: %(message)s', datefmt='%Y-%m-%d %H:%M:%S',
+    format='%(asctime)s %(levelname)s %(module)s.%(funcName)s: %(message)s', datefmt='%d.%m.%Y %H:%M:%S',
 )
 
 

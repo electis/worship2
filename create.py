@@ -52,12 +52,12 @@ def get_playing_text(filepath):
 def create(conf: Config):
     video_params = dict()
     # video_params = dict(hwaccel_output_format='cuda')
-    output_params = dict(acodec='aac', vcodec='libx264', f='flv', maxrate='2000k', bufsize='4000k', shortest=None)
+    output_params = dict(acodec='aac', vcodec='libx264', f='flv', maxrate='3000k', bufsize='6000k', shortest=None)
     output_params.update({
-        'b:v': '2000k', 'b:a': '128k', 'ar': '44100', 'framerate': '30', 'g': '30',
+        'b:v': '3000k', 'b:a': '128k', 'ar': '44100', 'framerate': '30', 'g': '30',
         'threads': conf.threads
     })
-    text_params = dict(box=1, boxcolor='black@0.5', x="(w-text_w)/2", boxborderw=15)
+    # text_params = dict(box=1, boxcolor='black@0.5', x="(w-text_w)/2", boxborderw=15)
 
     audio_files = glob.glob(conf.audio_path)
     random.shuffle(audio_files)
@@ -72,11 +72,11 @@ def create(conf: Config):
         pray_text = bible[num]
 
         if len(pray_text) < 600:
-            max_length = 60
-            font_size = 48
+            max_length = 58
+            font_size = 56
         else:
-            max_length = 76
-            font_size = 38
+            max_length = 64
+            font_size = 50
 
         pray_text = insert_line_breaks(pray_text, max_length=max_length)
         pray_y = int(500 - len(pray_text.split('\n')) * (40 / 2 + 4)) if conf.pray_top is None else conf.pray_top
@@ -85,9 +85,9 @@ def create(conf: Config):
         ff_video_src = ffmpeg.input(conf.video_file, stream_loop=-1, **video_params)
 
         ff_video = ff_video_src.drawtext(
-            pray_text, y=pray_y, fontcolor='yellow', fontsize=font_size, **text_params
+            pray_text, y=pray_y, fontcolor='white', fontsize=font_size, x="(w-text_w)/2"
         ).drawtext(
-            playing_text, y=1030, fontcolor='white', fontsize=32, **text_params
+            playing_text, y=1020, fontcolor='white', fontsize=32, x=600
         )
         out_file = os.path.join(conf.tmp_path, f'{num:03d}.mp4')
 

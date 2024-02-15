@@ -85,7 +85,7 @@ def create(conf: Config):
         ff_video_src = ffmpeg.input(conf.video_file, stream_loop=-1, **video_params)
 
         ff_video = ff_video_src.drawtext(
-            pray_text, y=pray_y, fontcolor='white', fontsize=font_size, x="(w-text_w)/2"
+            pray_text, y=pray_y, fontcolor='white', fontsize=font_size, x="(w-text_w)/2", shadowx=2, shadowy=2
         ).drawtext(
             playing_text, y=1020, fontcolor='white', fontsize=32, x=600
         )

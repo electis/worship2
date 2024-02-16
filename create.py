@@ -11,8 +11,11 @@ from conf import Config, read_config
 from helpers import notify, log_ffmpeg
 
 logging.basicConfig(
-    filename=os.path.join(os.path.dirname(os.path.abspath(__file__)), 'worship.log'), level=logging.INFO,
-    format='%(asctime)s %(levelname)s %(module)s.%(funcName)s: %(message)s', datefmt='%Y-%m-%d %H:%M:%S',
+    format='%(asctime)s %(levelname)s %(module)s.%(funcName)s: %(message)s',
+    level=logging.INFO, datefmt='%Y-%m-%d %H:%M:%S', handlers=[
+        logging.FileHandler(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'worship.log')),
+        logging.StreamHandler()
+    ]
 )
 
 
@@ -49,6 +52,30 @@ def get_playing_text(filepath):
     return f"{title} - {artist}", duration
 
 
+def concat(conf: Config):
+    if conf.debug:
+        logging.info('Concat')
+    # output_params = dict(f='flv', codec='copy')
+    output_params = dict(acodec='aac', vcodec='libx264', f='flv', maxrate='3000k', bufsize='6000k', shortest=None)
+    output_params.update({
+        'b:v': '3000k', 'b:a': '128k', 'ar': '44100', 'framerate': '30', 'g': '30',
+        'threads': conf.threads
+    })
+    out_file = os.path.join(conf.tmp_path, conf._out_file)
+    in_file = os.path.join(conf.tmp_path, conf._in_file)
+
+    with open(in_file, 'w') as file:
+        file.writelines([f"file '{path}'\n"
+                         for path in sorted(glob.glob(os.path.join(conf.tmp_path, '*.mp4')))])
+    joined = ffmpeg.input(in_file, format='concat', safe=0)
+
+    ff = ffmpeg.output(joined, out_file, **output_params).overwrite_output()
+    if conf.debug:
+        logging.debug(' '.join(ff.get_args()))
+    with log_ffmpeg(ff, conf):
+        ff.run(cmd=conf.stream_cmd or 'ffmpeg', capture_stdout=True, capture_stderr=True)
+
+
 def create(conf: Config):
     video_params = dict()
     # video_params = dict(hwaccel_output_format='cuda')
@@ -69,6 +96,8 @@ def create(conf: Config):
 
     playing_time = 0
     for num, audio in enumerate(audio_files):
+        if conf.debug:
+            logging.info(audio)
         pray_text = bible[num]
 
         if len(pray_text) < 600:
@@ -104,7 +133,10 @@ def create(conf: Config):
             if os.path.exists(out_file):
                 os.remove(out_file)
 
+    concat(conf)
+
+
 if __name__ == '__main__':
     conf = read_config()
-    with notify('Worship create', only_error=not(conf.debug)):
+    with notify('Worship create', only_error=not (conf.debug)):
         create(conf)

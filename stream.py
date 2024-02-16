@@ -17,12 +17,9 @@ logging.basicConfig(
 def stream(conf: Config):
     output_params = dict(f='flv', codec='copy')
     stream = f"{conf.stream_url}{'' if conf.stream_url.endswith('/') else '/'}{conf.stream_key}"
-    in_file = os.path.join(conf.tmp_path, conf._in_file)
+    in_file = os.path.join(conf.tmp_path, conf._out_file)
 
-    with open(in_file, 'w') as file:
-        file.writelines([f"file '{path}'\n"
-                         for path in sorted(glob.glob(os.path.join(conf.tmp_path, '*.mp4')))])
-    joined = ffmpeg.input(in_file, safe=0, format='concat', re=None)
+    joined = ffmpeg.input(in_file, re=None)
 
     ff = ffmpeg.output(joined, stream, **output_params).overwrite_output()
     if conf.debug:
@@ -34,6 +31,6 @@ def stream(conf: Config):
 if __name__ == '__main__':
     conf = read_config()
     with notify('Worship stream', conf.tg_, only_error=not(conf.debug)):
-        post2group(conf)
-        post2vk_task(conf)
+        # post2group(conf)
+        # post2vk_task(conf)
         stream(conf)

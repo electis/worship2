@@ -56,9 +56,9 @@ def concat(conf: Config):
     if conf.debug:
         logging.info('Concat')
     # output_params = dict(f='flv', codec='copy')
-    output_params = dict(acodec='aac', vcodec='libx264', f='flv', maxrate='2000k', bufsize='4000k', shortest=None)
+    output_params = dict(acodec='aac', vcodec='libx264', f='flv', maxrate='3000k', bufsize='6000k', shortest=None)
     output_params.update({
-        'b:v': '2000k', 'b:a': '128k', 'ar': '44100', 'framerate': '30', 'g': '30',
+        'b:v': '3000k', 'b:a': '128k', 'ar': '44100', 'framerate': '30', 'g': '30',
         'threads': conf.threads
     })
     out_file = os.path.join(conf.tmp_path, conf._out_file)

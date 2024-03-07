@@ -74,11 +74,8 @@ def post2group(conf: Config):
                 "youtube_filter": "Время молитвы"
             }
         }
-        try:
+        with notify('post2group'):
             run_task(conf, params)
-        except Exception as exc:
-            logging.exception(exc)
-            log_tg(f'post2group {exc}', conf.tg_)
 
 
 @contextmanager

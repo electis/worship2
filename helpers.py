@@ -69,7 +69,7 @@ def post2group(conf: Config):
             "task": "start_worship",
             "params": {
                 "chat_id": conf.post_.chat_id,
-                "text": "Время молитвы",
+                "text": "#ВремяМолитвы",
                 "youtube_live": conf.post_.youtube_channel,
                 "youtube_filter": "Время молитвы"
             }

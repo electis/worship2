@@ -39,7 +39,6 @@ class Config(BaseModel):
     post_: Post = None
     vk_: VK = None
     _in_file: str = 'input.txt'
-    _out_file: str = 'output.flv'
 
 
 def script_dir():

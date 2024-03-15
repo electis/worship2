@@ -56,9 +56,9 @@ def concat(conf: Config):
     if conf.debug:
         logging.info('Concat')
     # output_params = dict(f='flv', codec='copy')
-    output_params = dict(acodec='aac', vcodec='libx264', f='flv', shortest=None)
+    output_params = dict(acodec='aac', vcodec='libx264', f='flv', maxrate='3000k', bufsize='6000k', shortest=None)
     output_params.update({
-        'b:v': '3000k', 'b:a': '160k', 'ar': '44100', 'framerate': '30', 'g': '30',
+        'b:v': '3000k', 'b:a': '128k', 'ar': '44100', 'framerate': '30', 'g': '30',
         'threads': conf.threads
     })
     out_file = os.path.join(conf.tmp_path, conf._out_file)
@@ -66,7 +66,7 @@ def concat(conf: Config):
 
     with open(in_file, 'w') as file:
         file.writelines([f"file '{path}'\n"
-                         for path in sorted(glob.glob(os.path.join(conf.tmp_path, '*.ts')))])
+                         for path in sorted(glob.glob(os.path.join(conf.tmp_path, '*.mp4')))])
     joined = ffmpeg.input(in_file, format='concat', safe=0)
 
     ff = ffmpeg.output(joined, out_file, **output_params).overwrite_output()
@@ -79,9 +79,10 @@ def concat(conf: Config):
 def create(conf: Config):
     video_params = dict()
     # video_params = dict(hwaccel_output_format='cuda')
-    output_params = dict(acodec='aac', vcodec='libx264', f='mpegts', shortest=None, maxrate='3000k', bufsize='6000k')
+    output_params = dict(acodec='aac', vcodec='libx264', f='flv', maxrate='3000k', bufsize='6000k', shortest=None)
     output_params.update({
-        'b:a': '160k', 'ar': '44100', 'threads': conf.threads, 'bsf:v': 'h264_mp4toannexb', 'g': '30', 'framerate': '30'
+        'b:v': '3000k', 'b:a': '128k', 'ar': '44100', 'framerate': '30', 'g': '30',
+        'threads': conf.threads
     })
     # text_params = dict(box=1, boxcolor='black@0.5', x="(w-text_w)/2", boxborderw=15)
 
@@ -117,7 +118,7 @@ def create(conf: Config):
         ).drawtext(
             playing_text, y=1020, fontcolor='white', fontsize=32, x=600
         )
-        out_file = os.path.join(conf.tmp_path, f'{num:03d}.ts')
+        out_file = os.path.join(conf.tmp_path, f'{num:03d}.mp4')
 
         ff = ffmpeg.output(ff_video, ff_audio, out_file, **output_params).overwrite_output()
         if conf.debug:

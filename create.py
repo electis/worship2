@@ -11,8 +11,11 @@ from conf import Config, read_config
 from helpers import notify, log_ffmpeg
 
 logging.basicConfig(
-    filename=os.path.join(os.path.dirname(os.path.abspath(__file__)), 'worship.log'), level=logging.INFO,
-    format='%(asctime)s %(levelname)s %(module)s.%(funcName)s: %(message)s', datefmt='%Y-%m-%d %H:%M:%S',
+    format='%(asctime)s %(levelname)s %(module)s.%(funcName)s: %(message)s',
+    level=logging.INFO, datefmt='%Y-%m-%d %H:%M:%S', handlers=[
+        logging.FileHandler(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'worship.log')),
+        logging.StreamHandler()
+    ]
 )
 
 

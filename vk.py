@@ -16,17 +16,12 @@ def get_api(access_token):
 
 def get_live(api, owner_id, last=10):
     videos = api.video.get(owner_id=owner_id, count=last)
-
-    video = None
     now = datetime.now()
     for video in videos.get('items', []):
         live_status = video.get('live_status')
         date = datetime.fromtimestamp(video['date']).date()
         if live_status == 'started' and date == now.date():
-            break
-        video = None
-
-    return video
+            return video
 
 
 def post_wall(api, owner_id, message=None, attachments=None, video=None, mute_notifications=1, from_group=1):
@@ -73,7 +68,7 @@ def vk_stop_stream(conf: Config):
         api = get_api(conf.vk_.access_token)
         video = get_live(api, conf.vk_.group_id)
         if video:
-            return api.video.stopStreaming(group_id=conf.vk_.group_id, video_id=video)
+            return api.video.stopStreaming(group_id=-int(conf.vk_.group_id), video_id=video['id'])
         logging.warning('post2vk: live video not found')
 
 

@@ -68,15 +68,6 @@ def del_video(api, owner_id, video_id):
     return api.video.delete(video_id=video_id, owner_id=owner_id, target_id=owner_id)
 
 
-def vk_stop_stream(conf: Config):
-    with notify('post2vk'):
-        api = get_api(conf.vk_.access_token)
-        video = get_live(api, conf.vk_.group_id)
-        if video:
-            return api.video.stopStreaming(group_id=conf.vk_.group_id, video_id=video)
-        logging.warning('post2vk: live video not found')
-
-
 def post2vk(conf: Config, data_file='post2vk.json'):
     with notify('post2vk'):
         api = get_api(conf.vk_.access_token)

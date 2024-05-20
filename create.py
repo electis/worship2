@@ -74,7 +74,7 @@ def create(conf: Config):
     for num, audio in enumerate(audio_files):
         pray_text = bible[num]
 
-        if len(pray_text) < 600:
+        if len(pray_text) < 550:
             max_length = 58
             font_size = 56
         else:

@@ -58,7 +58,7 @@ def create(conf: Config):
     output_params = dict(acodec='aac', vcodec='libx264', f='flv', maxrate='3000k', bufsize='6000k', shortest=None)
     output_params.update({
         'b:v': '3000k', 'b:a': '128k', 'ar': '44100', 'framerate': '30', 'g': '30',
-        'threads': conf.threads
+        'threads': conf.threads, 'profile': 'baseline',
     })
     # text_params = dict(box=1, boxcolor='black@0.5', x="(w-text_w)/2", boxborderw=15)
 

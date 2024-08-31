@@ -2,6 +2,7 @@ import glob
 import logging
 import os
 import random
+from datetime import datetime
 
 import ffmpeg
 
@@ -31,15 +32,20 @@ def calc_font(text):
         return 50, 64
 
 
+def now():
+    return datetime.now().strftime('%d-%m-%Y %H:%M:%S')
+
+
 def proceed_stream():
     logging.info('proceed_stream')
     conf = read_config()
-    video_params = dict(hwaccel_output_format='cuda')
-    # video_params = dict()
+    # video_params = dict(hwaccel_output_format='cuda')
+    video_params = dict()
+    # TODO останавливается трансляция. синхронизировать рендер со стримом
     create_params = dict(acodec='aac', vcodec='libx264', f='flv', maxrate='3000k', bufsize='6000k', shortest=None)
     create_params.update({
         'b:v': '3000k', 'b:a': '128k', 'ar': '44100', 'framerate': '30', 'g': '30',
-        'threads': conf.threads
+        'threads': conf.threads, 'profile': 'baseline',
     })
     stream_params = dict(f='flv', codec='copy')
 
@@ -72,13 +78,15 @@ def proceed_stream():
         ff = ffmpeg.output(ff_video, ff_audio, out_file, **create_params).overwrite_output()
         if creating:
             creating.wait()
+        print(f'{now()} start rendering {audio} ({playing_text}) {duration}')
         creating = ff.run_async(cmd=conf.stream_cmd or 'ffmpeg', overwrite_output=True, quiet=True)
 
         with open(in_file, 'a') as file:
             print(f'file {out_file}', file=file)
         if num == 2:
             stream = ffmpeg.output(joined, stream_url, **stream_params).overwrite_output()
-            stream.run_async(cmd=conf.stream_cmd or 'ffmpeg', overwrite_output=True)
+            print(f'{now()} start stream')
+            stream.run_async(cmd=conf.stream_cmd or 'ffmpeg', overwrite_output=True, quiet=True)
 
         num += 1
 

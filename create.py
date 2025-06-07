@@ -20,6 +20,28 @@ logging.basicConfig(
 
 
 def insert_line_breaks(text: str, max_length=64):
+    # if length > max_length: result[last_space] = '\n'
+    result = ''
+    length = cur = last_space = 0
+    while cur < len(text):
+        if text[cur] == ' ':
+            last_space = cur
+        if text[cur:cur + 1] == '\n':
+            result += '\n'
+            cur += 1
+            length = 0
+            continue
+        if length >= max_length:
+            result = result[:last_space] + '\n'
+            cur = last_space + 1
+            length = 0
+        result += text[cur]
+        cur += 1
+        length += 1
+    return result
+
+
+def insert_line_breaks_old(text: str, max_length=64):
     result = ''
     length = 0
     for num, char in enumerate(text):

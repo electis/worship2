@@ -91,16 +91,17 @@ def create(conf: Config):
         os.remove(f)
 
     random.shuffle(bible)
+    # bible.sort(key=len, reverse=True)
 
     playing_time = 0
     for num, audio in enumerate(audio_files):
         pray_text = bible[num]
 
         if len(pray_text) < 550:
-            max_length = 58
+            max_length = 60
             font_size = 56
         else:
-            max_length = 64
+            max_length = 69
             font_size = 50
 
         pray_text = insert_line_breaks(pray_text, max_length=max_length)
